@@ -17,6 +17,6 @@
 > 普通职员: normal/123456
 
 ## 运行截图
-[](https://github.com/hanhuafeng/software-project-development-management-platform/blob/main/pic/FC9DDE71-A29B-41BD-AE63-5FA4CAACE3D8.png)
-[](https://github.com/hanhuafeng/software-project-development-management-platform/blob/main/pic/DA3667BC-E2CA-4842-8F20-B7A6F2BEF895.png)
-[](https://github.com/hanhuafeng/software-project-development-management-platform/blob/main/pic/B47215F2-78F7-44FE-B025-419ECAE7E995.png)
+[](https://raw.githubusercontent.com/hanhuafeng/software-project-development-management-platform/master/pic/FC9DDE71-A29B-41BD-AE63-5FA4CAACE3D8.png)
+[](https://raw.githubusercontent.com/hanhuafeng/software-project-development-management-platform/master/pic/main/pic/DA3667BC-E2CA-4842-8F20-B7A6F2BEF895.png)
+[](https://raw.githubusercontent.com/hanhuafeng/software-project-development-management-platform/master/pic/B47215F2-78F7-44FE-B025-419ECAE7E995.png)

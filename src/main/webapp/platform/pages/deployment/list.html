@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>调配列表</title>
+    <meta name="Description" content="调配列表"/>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        .layui-form-switch {
+            width: 55px;
+        }
+
+        .layui-form-switch em {
+            width: 40px;
+        }
+
+        body {
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+
+<body>
+<div class="weadmin-nav">
+			<span class="layui-breadcrumb">
+        <a href="">OA审批</a>
+        <a>
+          <cite>调配审批</cite></a>
+      </span>
+    <a class="layui-btn layui-btn-sm" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:30px">&#x1002;</i></a>
+</div>
+<div class="weadmin-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 we-search">
+            申请记录搜索：
+            <div class="layui-inline">
+                <input type="text" name="username" placeholder="请输入提交人" autocomplete="off" class="layui-input">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <table class="layui-hide" id="articleList"></table>
+
+
+    <script type="text/html" id="operateTpl">
+        {{# if(d.dealPersonName ==null ){ }}
+        <a title="同意" onclick="deal({{d.subscriptionId}},1)" href="javascript:;">
+            <i class="layui-icon">&#x1005;</i>
+        </a>
+        <a title="拒绝" onclick="deal({{d.subscriptionId}},-1)" href="javascript:;">
+            <i class="layui-icon">&#x1007;</i>
+        </a>
+        {{# }else{}}
+        <span>{{d.dealPersonName}}已{{# if(d.dealStatus == 1){ }}同意{{#}else{}}拒绝{{#}}}</span>
+        {{# }}}
+    </script>
+    <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+    <script src="list.js" type="text/javascript" charset="utf-8"></script>
+</div>
+</body>
+</html>

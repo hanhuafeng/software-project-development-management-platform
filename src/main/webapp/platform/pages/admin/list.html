@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-nav">
+			<span class="layui-breadcrumb">
+        <a href="">用户管理</a>
+        <a>
+          <cite>用户列表</cite></a>
+      </span>
+    <a class="layui-btn layui-btn-sm" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:30px">ဂ</i></a>
+</div>
+<div class="weadmin-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 we-search" style="width: auto;margin-right: 12px">
+            <div class="layui-inline">
+                <input type="text" name="username" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+        <button class="layui-btn" onclick="WeAdminShow('添加用户','./add.html',600,500)"><i class="layui-icon"></i>添加
+        </button>
+    </div>
+    <table id="dataTable" lay-filter="test"></table>
+</div>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script src="../../static/js/eleDel.js" type="text/javascript" charset="utf-8"></script>
+</body>
+<script>
+    var dataTable;
+    layui.extend({
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl'
+    });
+
+    layui.use(['table', 'common', 'form', 'commonCtl'], function () {
+        var table = layui.table,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            form = layui.form;
+        dataTable = table.render({
+            elem: '#dataTable',
+            cellMinWidth: 80,
+            url: commonCtl.USER_LIST(),
+            where: {
+                //设定异步数据接口的额外参数，任意设
+                'userName': ''
+            },
+            cols: [
+                [{
+                    field: 'id', title: 'ID', sort: true
+                }, {
+                    field: 'userName', title: '用户名称', templet: '#usernameTpl'
+                }, {
+                    field: 'trueName', title: '员工姓名', templet: '#classifications'
+                }, {
+                    field: 'type', title: '身份', templet: '#typeTpl'
+                }, {
+                    field: 'createTime', title: '员工创建时间', templet: '#usernameTpl'
+                }, {
+                    field: 'operate', title: '操作', toolbar: '#operateTpl', unresize: true
+                }]
+            ],
+            event: true,
+            page: true,
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.list //解析数据列表
+                };
+            },
+            response: {
+                statusName: 'code' //规定数据状态的字段名称，默认：code
+                , statusCode: 10000 //规定成功的状态码，默认：0
+                , msgName: 'msg' //规定状态信息的字段名称，默认：msg
+                // ,countName: 'total' //规定数据总数的字段名称，默认：count
+                , dataName: 'data' //规定数据列表的字段名称，默认：data
+            },
+            done: function (res, curr, count) {
+            }
+        });
+        form.on('submit(search)', function (data) {
+            var containSpecial = RegExp(/[(\ )(\~)(\!)(\@)(\#)(\$)(\%)(\^)(\&)(\*)(\()(\))(\-)(\_)(\+)(\=)(\[)(\])(\{)(\})(\|)(\\)(\;)(\:)(\')(\")(\,)(\.)(\/)(\<)(\>)(\?)(\)]+/);
+            if (!containSpecial.test(data.field.username)) {
+                dataTable.reload({
+                    where: {
+                        //设定异步数据接口的额外参数，任意设
+                        'userName': data.field.username.replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/©/g, "&copy;")
+                    }
+                });
+            } else {
+                layer.msg('不能有特殊字符!', {
+                    icon: 5,
+                    time: 1000
+                });
+            }
+            return false;
+        });
+        form.render();
+        window.reloadTableData = function () {
+            dataTable.reload();
+        }
+        window.deleteUser = function (userId) {
+            layer.confirm('确认要删除吗？', function (index) {
+                //发异步删除数据
+                common.delete(commonCtl.DELETE_USER() + '?id=' + userId, 'json', (callback) => {
+                    if (callback.code == 10000) {
+                        layer.msg('删除成功!', {
+                            icon: 1,
+                            time: 1000
+                        }, function () {
+                            reloadTableData();
+                        });
+                    } else {
+                        layer.msg('删除失败,错误代码:' + callback.code, {
+                            icon: 5,
+                            time: 1000
+                        });
+                    }
+
+                }, (error) => {
+                    layer.msg('删除失败,错误：' + error, {
+                        icon: 5,
+                        time: 1000
+                    });
+                })
+
+            });
+
+        }
+    });
+</script>
+<script type="text/html" id="operateTpl">
+    <a title="编辑" onclick="WeAdminShow('修改用户信息','./edit.html?userId={{d.id}}',600,500)" href="javascript:;">
+        <i class="layui-icon">&#xe642;</i>
+    </a>
+    <a title="删除" onclick="deleteUser({{d.id}})" href="javascript:;">
+        <i class="layui-icon">&#xe640;</i>
+    </a>
+</script>
+<script type="text/html" id="typeTpl">
+    {{# if(d !== 'undefine'){ }}
+    {{# if(d.type=='1'){    }}
+    <span>项目经理</span>
+    {{# }else if(d.type=='2'){ }}
+    <span>普通职员</span>
+    {{# }else{ }}
+    <span>未知职位</span>
+    {{# } }}
+    {{# } }}
+</script>
+</html>

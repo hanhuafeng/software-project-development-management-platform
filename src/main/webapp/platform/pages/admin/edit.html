@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>软件项目开发管理平台</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-body">
+    <form class="layui-form">
+        <input type="hidden" value="" name="id" id="user_id">
+        <div class="layui-form-item">
+            <label for="trueName" class="layui-form-label">
+                <span class="we-red">*</span>真实姓名
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="trueName" name="trueName" required="" lay-verify="required"
+                       autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">
+                <span class="we-red">*</span>员工真实姓名
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="we-red">*</span>角色</label>
+            <div class="layui-input-inline">
+                <select name="type" lay-filter="type" id="type">
+                    <option value=""></option>
+                    <option value="1" selected="">项目经理</option>
+                    <option value="2">普通职员</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="L_pass" class="layui-form-label">
+                <span class="we-red">*</span>密码
+            </label>
+            <div class="layui-input-inline">
+                <input type="password" id="L_pass" name="password" required="" lay-verify="pass"
+                       autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">
+                6到16个字符
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="L_repass" class="layui-form-label">
+                <span class="we-red">*</span>确认密码
+            </label>
+            <div class="layui-input-inline">
+                <input type="password" id="L_repass" name="repass" required="" lay-verify="repass"
+                       autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="idCard" class="layui-form-label">
+                证件号
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="idCard" name="idcard" lay-verify="ownerIdentity"
+                       autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="phone" class="layui-form-label">
+                手机号
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="phone" name="phone" lay-verify="phone"
+                       autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label for="L_repass" class="layui-form-label">
+            </label>
+            <button class="layui-btn" lay-filter="update" lay-submit="">
+                修改
+            </button>
+        </div>
+    </form>
+</div>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script type="text/javascript">
+    layui.extend({
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl',
+    });
+    layui.use(['form', 'layer', 'common', 'commonCtl'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            $ = layui.jquery;
+
+        //自定义验证规则
+        form.verify({
+            pass: [/(.+){6,12}$/, '密码必须6到12位']
+            , repass: function (value) {
+                if ($('#L_pass').val() != $('#L_repass').val()) {
+                    return '两次密码不一致';
+                }
+            }, ownerIdentity: function (value) {
+                var val = value;
+                if (val !== '') {
+                    var city = {
+                        11: "北京",
+                        12: "天津",
+                        13: "河北",
+                        14: "山西",
+                        15: "内蒙古",
+                        21: "辽宁",
+                        22: "吉林",
+                        23: "黑龙江 ",
+                        31: "上海",
+                        32: "江苏",
+                        33: "浙江",
+                        34: "安徽",
+                        35: "福建",
+                        36: "江西",
+                        37: "山东",
+                        41: "河南",
+                        42: "湖北 ",
+                        43: "湖南",
+                        44: "广东",
+                        45: "广西",
+                        46: "海南",
+                        50: "重庆",
+                        51: "四川",
+                        52: "贵州",
+                        53: "云南",
+                        54: "西藏 ",
+                        61: "陕西",
+                        62: "甘肃",
+                        63: "青海",
+                        64: "宁夏",
+                        65: "新疆",
+                        71: "台湾",
+                        81: "香港",
+                        82: "澳门",
+                        91: "国外 "
+                    };
+                    var tip = "";
+                    var pass = true;
+
+                    if (!value || !/^\d{6}(18|19|20)?\d{2}(0[1-9]|1[012])(0[1-9]|[12]\d|3[01])\d{3}(\d|X)$/i.test(value)) {
+                        tip = "身份证号格式错误";
+                        pass = false;
+                    } else if (!city[value.substr(0, 2)]) {
+                        tip = "地址编码错误";
+                        pass = false;
+                    } else {
+                        //18位身份证需要验证最后一位校验位
+                        if (value.length == 18) {
+                            value = value.split('');
+                            //∑(ai×Wi)(mod 11)
+                            //加权因子
+                            var factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+                            //校验位
+                            var parity = [1, 0, 'X', 9, 8, 7, 6, 5, 4, 3, 2];
+                            var sum = 0;
+                            var ai = 0;
+                            var wi = 0;
+                            for (var i = 0; i < 17; i++) {
+                                ai = value[i];
+                                wi = factor[i];
+                                sum += ai * wi;
+                            }
+                            var last = parity[sum % 11];
+                            if (parity[sum % 11] != value[17]) {
+                                tip = "校验位错误";
+                                pass = false;
+                            }
+                        }
+                    }
+                    if (!pass) return ("身份证号校验异常:" + tip);
+                }
+            }
+        });
+
+        //监听提交
+        form.on('submit(update)', function (data) {
+            common.ajax(commonCtl.UPDATE_USER(), 'PUT', 'json', data.field, (callback) => {
+                if (callback.code == 10000) {
+                    layer.alert("修改成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //关闭当前frame
+                        parent.layer.close(index);
+                        try {
+                            parent.reloadTableData();
+                        } catch (e) {
+
+                        }
+
+                    });
+                } else {
+                    layer.msg('修改用户信息失败,errorCode:' + callback.code, {
+                        icon: 5,
+                        time: 1000
+                    });
+                }
+
+            }, (error) => {
+                console.log(error)
+                layer.msg('修改用户信息失败,error:' + error, {
+                    icon: 5,
+                    time: 1000
+                });
+            })
+            return false;
+        });
+        common.notAsyncGet(commonCtl.GET_USER_BY_USER_ID() + "?userId=" + common.getParams('userId'),
+            'json',
+            (callback) => {
+                console.log(callback)
+                if (callback.code == 10000) {
+                    let data = callback.data
+                    $('#trueName').val(data.trueName);
+                    $('#type').val(data.type);
+                    $('#L_repass').val(data.password);
+                    $('#L_pass').val(data.password);
+                    $('#user_id').val(data.id);
+                    if (data.idcard != null) {
+                        $('#idCard').val(data.idcard);
+                    }
+                    if (data.phone != null) {
+                        $('#phone').val(data.phone);
+                    }
+                    form.render();
+                }
+            }, (error) => {
+                console.log(error)
+                layer.msg('获取用户信息失败,error:' + error, {
+                    icon: 5,
+                    time: 1000
+                });
+            }
+        )
+    });
+</script>
+</body>
+
+</html>

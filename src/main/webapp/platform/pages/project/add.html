@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>项目新增</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-body">
+    <form class="layui-form">
+        <input type="hidden" id="pid" name="pid" value="0">
+        <div class="layui-form-item">
+            <label for="projectName" class="layui-form-label">
+                <span class="we-red">*</span>项目名</label>
+            <div class="layui-input-inline">
+                <input type="text" lay-verify="required" id="projectName" name="projectName" autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="describe" class="layui-form-label">
+                <span class="we-red">*</span>项目描述
+            </label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" lay-verify="required" class="layui-textarea" id="describe"
+                          name="describe"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="dutyPersonId" class="layui-form-label">
+                <span class="we-red">*</span>项目负责人
+            </label>
+            <div class="layui-input-inline">
+                <select name="dutyPersonId" id="dutyPersonId" lay-verify="required" lay-search="">
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="projectTime" class="layui-form-label">
+                <span class="we-red">*</span>项目时间
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="projectTime" placeholder=" - " name="projectTime">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label for="addButton" class="layui-form-label"></label>
+            <button id="addButton" class="layui-btn" lay-filter="add" lay-submit="">增加</button>
+        </div>
+    </form>
+</div>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script>
+    Date.prototype.Format = function (fmt) { // author: meizz
+        var o = {
+            "M+": this.getMonth() + 1, // 月份
+            "d+": this.getDate(), // 日
+            "h+": this.getHours(), // 小时
+            "m+": this.getMinutes(), // 分
+            "s+": this.getSeconds(), // 秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+            "S": this.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+    layui.extend({
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl'
+    });
+    layui.use(['form', 'layer', 'laydate', 'jquery', 'common', 'commonCtl', 'laytpl'], function () {
+
+        var form = layui.form,
+            laydate = layui.laydate,
+            $ = layui.jquery,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            laytpl = layui.laytpl,
+            layer = layui.layer;
+        let fatherId = common.getParams('fatherId');
+        let userType = '1';
+        if (typeof fatherId != 'undefined') {
+            $('#pid').val(fatherId);
+            userType = '2';
+        }
+        let min = common.getParams('min');
+        let max = common.getParams('max');
+        if(typeof min == 'undefined'){
+            min = new Date().Format("yyyy-MM-dd hh:mm:ss");
+        }
+        //监听提交
+        form.on('submit(add)', function (data) {
+            console.log(data);
+            let param = {};
+            param['name'] = data.field.projectName;
+            param['pid'] = data.field.pid;
+            param['describeInfo'] = data.field.describe;
+            param['dutyPersonId'] = data.field.dutyPersonId;
+            let projectTime = (data.field.projectTime).split(' - ');
+            param['startTime'] = projectTime[0];
+            param['endTime'] = projectTime[1];
+            common.ajax(commonCtl.ADD_NEW_PROJECT(), 'POST', 'json', param, (callback) => {
+                if (callback.code == 10000) {
+                    layer.alert("增加项目成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //关闭当前frame
+                        parent.layer.close(index);
+                        parent.reloadTableData();
+                    });
+                } else {
+                    layer.msg('新增项目失败,错误代码:' + callback.code, {
+                        icon: 5,
+                        time: 1000
+                    });
+                }
+            }, (error) => {
+                layer.msg('新增项目失败,错误信息:' + JSON.stringify(error), {
+                    icon: 5,
+                    time: 1000
+                });
+            })
+            return false;
+        });
+        $(function () {
+            // 初始化时间格式
+
+            if(typeof max == 'undefined'){
+                laydate.render({
+                    elem: '#projectTime'
+                    , type: 'datetime'
+                    , range: true
+                    , min: min
+                });
+            }else {
+                laydate.render({
+                    elem: '#projectTime'
+                    , type: 'datetime'
+                    , range: true
+                    , min: min
+                    , max: max
+                });
+            }
+            common.notAsyncGet(commonCtl.GET_USERS_BY_USER_TYPE() + userType, 'json', (callback) => {
+                if (callback.code == 10000) {
+                    var getTpl = document.getElementById('dutyPersonList').innerHTML
+                        , view = document.getElementById('dutyPersonId');
+                    laytpl(getTpl).render(callback, function (html) {
+                        view.innerHTML = html;
+                    });
+                    form.render();
+                } else {
+                    layer.msg('获取项目经理列表失败,错误代码:' + callback.code, {
+                        icon: 5,
+                        time: 1000
+                    });
+                }
+            }, (error) => {
+                layer.msg('获取项目经理列表失败,错误信息:' + error, {
+                    icon: 5,
+                    time: 1000
+                });
+            })
+        });
+    });
+</script>
+<script id="dutyPersonList" type="text/html">
+    <option value="">输入或选择项目负责人</option>
+
+    {{#  layui.each(d.data, function(index, item){ }}
+    <option value='{{item.id}}'>{{item.trueName}}</option>
+    {{#  }); }}
+
+</script>
+</body>
+
+</html>

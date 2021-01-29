@@ -1,0 +1,35 @@
+server:
+  port: 8888
+  servlet:
+    context-path: /software/project/development/management/server
+    jsp:
+      init-parameters:
+        development: true
+  url: 127.0.0.1
+  projectName: softwareProject
+# 热部署生效
+spring:
+  devtools:
+    restart:
+      enabled: true
+      #设置重启的目录
+      additional-paths: src/main/java/
+      exclude: WEB-INF/**,logs/**
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  thymeleaf: #关闭默认模板引擎
+    cache: false
+    enable-spring-el-compiler: false
+  jackson:
+    #时间戳统一转换
+    date-format: yyyy-MM-dd HH:mm:ss
+    #这个是时区，一定要加，否则会默认为格林尼治时间，即少8小时
+    time-zone: GMT+8
+mysql:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/software_platform?allowMultiQueries=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver

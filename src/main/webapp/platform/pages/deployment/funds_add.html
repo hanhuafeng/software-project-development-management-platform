@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>经费申请</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-body">
+    <div class="layui-row">
+        <form class="layui-form">
+            <div class="layui-form-item">
+                <label for="price" class="layui-form-label" style="padding-left: 0">
+                    <span class="we-red">*</span>经费金额
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="price" name="price" required="" lay-verify="required"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="reason" class="layui-form-label" style="padding-left: 0">
+                    <span class="we-red">*</span>申请理由
+                </label>
+                <div class="layui-input-inline">
+                    <textarea name="reason" required lay-verify="required" placeholder="请输入申请理由" class="layui-textarea"
+                              id="reason"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="addButton" class="layui-form-label"></label>
+                <button id="addButton" class="layui-btn layui-btn-fluid" lay-filter="add" lay-submit="">发起请求</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script>
+    let userType = '2';
+    layui.extend({
+        admin: '{/}./../../static/js/admin',
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl'
+    });
+    layui.use([
+        'form',
+        'layer',
+        'jquery',
+        'common',
+        'laytpl',
+        'commonCtl',
+    ], function () {
+        var form = layui.form,
+            admin = layui.admin,
+            $ = layui.jquery,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            laytpl = layui.laytpl,
+            layer = layui.layer;
+        $("#price").keyup(function () {
+            var reg = $(this).val().match(/\d+\.?\d{0,2}/);
+            var txt = '';
+            if (reg != null) {
+                txt = reg[0];
+            }
+            $(this).val(txt);
+        }).change(function () {
+            $(this).keypress();
+            var v = $(this).val();
+            if (/\.$/.test(v)) {
+                $(this).val(v.substr(0, v.length - 1));
+            }
+        });
+        form.on('submit(add)', function (data) {
+            let param = {
+                "price": data.field.price,
+                "reason": data.field.reason,
+                "projectId":common.getParams("id")
+            }
+            common.ajax(commonCtl.ADD_NEW_FUNDS(), 'post', 'json', param, (callback) => {
+                if (callback.code == 10000) {
+                    layer.alert("申请成功，请等待上级审批!", {icon: 6}, function () {
+                        // 获得frame索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //关闭当前frame
+                        parent.layer.close(index);
+                        parent.reloadTableData();
+                    });
+                } else {
+                    layer.msg('申请失败,错误代码:' + callback.code, {
+                        icon: 5,
+                        time: 1000
+                    });
+                }
+
+            }, (error) => {
+                layer.msg('申请失败,错误：' + error, {
+                    icon: 5,
+                    time: 1000
+                });
+            })
+            return false;
+        });
+        form.render();
+    });
+</script>
+<script id="dutyPersonList" type="text/html">
+    <option value="">输入或选择项目负责人</option>
+    {{#  layui.each(d.data, function(index, item){}}
+    <option value='{{item.id}}'>{{item.trueName}}</option>
+    {{#  }); }}
+
+</script>
+</html>

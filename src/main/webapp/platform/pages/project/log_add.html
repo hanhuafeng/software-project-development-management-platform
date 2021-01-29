@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>项目日志</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-body">
+    <div class="layui-row">
+<!--        <form class="" style="width: auto;display: inline-block;margin-right: 5px">-->
+<!--            日志搜索：-->
+<!--            <div class="layui-inline">-->
+<!--                <input type="text" id="trueName" name="trueName" placeholder="请输入用户名" autocomplete="off" class="layui-input">-->
+<!--            </div>-->
+<!--            <button class="layui-btn" lay-submit="" lay-filter="search" style="margin-left: 5px;display: inline-block"><i class="layui-icon">&#xe615;</i></button>-->
+<!--        </form>-->
+<!--        <button class="layui-btn" onclick="WeAdminShow('添加新日志','./add.html',600,500)"><i class="layui-icon"></i>添加-->
+<!--        </button>-->
+        <textarea id="log_info" style="display: none;"></textarea>
+        <br>
+        <button type="button" class="layui-btn layui-btn-fluid" onclick="upload()">发布</button>
+    </div>
+</div>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script>
+    let editIndex;
+    Date.prototype.Format = function (fmt) {
+        var o = {
+            "M+": this.getMonth() + 1, // 月份
+            "d+": this.getDate(), // 日
+            "h+": this.getHours(), // 小时
+            "m+": this.getMinutes(), // 分
+            "s+": this.getSeconds(), // 秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+            "S": this.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+    layui.extend({
+        admin: '{/}./../../static/js/admin',
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl'
+    });
+    layui.use([
+        'form',
+        'layer',
+        'jquery',
+        'common',
+        'commonCtl',
+        'layedit'
+    ], function () {
+
+        var form = layui.form,
+            admin = layui.admin,
+            $ = layui.jquery,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            layedit = layui.layedit,
+            layer = layui.layer;
+        let projectId = parent.returnProjectId();
+        $(function () {
+            editIndex = layedit.build('log_info',{
+                tool: [
+                    'strong' //加粗
+                    ,'italic' //斜体
+                    ,'underline' //下划线
+                    ,'del' //删除线
+                    ,'|' //分割线
+                    ,'left' //左对齐
+                    ,'center' //居中对齐
+                    ,'right' //右对齐
+                ]
+            }); //建立编辑器
+        });
+        window.upload = function(){
+            form.render()
+            layedit.sync(editIndex);
+            let content = layedit.getContent(editIndex);
+            let param = {};
+            param['content'] = content;
+            param['projectId'] = projectId;
+            common.ajax(commonCtl.ADD_NEW_PROJECT_LOG(),'post','json',param,(callback)=>{
+                if(callback.code == 10000){
+                    layer.alert("新增日志成功", {icon: 6}, function () {
+                        // 获得frame索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //关闭当前frame
+                        parent.layer.close(index);
+                        parent.initProjectLog();
+                        parent.parent.reloadTableData();
+                    });
+                }else {
+                    layer.msg('新增日志失败,错误代码:' + callback.code, {
+                        icon: 5,
+                        time: 5000
+                    });
+                }
+                console.log(callback)
+            },(error)=>{
+                console.log(error)
+                layer.msg('新增日志失败,错误信息:' + error, {
+                    icon: 5,
+                    time: 5000
+                });
+            })
+        }
+        form.render()
+    });
+</script>
+
+</body>
+
+</html>

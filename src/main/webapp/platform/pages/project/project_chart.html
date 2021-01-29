@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>图表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-body">
+<!--    <div id="main" style="width: 100%;height: 50%"></div>-->
+    <div class="layui-col-lg12 layui-collapse" style="border: none;">
+        <div class="layui-col-lg6 layui-col-md12">
+            <!--统计信息展示-->
+            <fieldset class="layui-elem-field" style="padding: 5px;">
+                <!--WeAdmin公告-->
+                <div class="layui-card">
+                    <div class="layui-elem-quote font16">本年度年统计图</div>
+                    <div class="layui-card-body" style="width: 100%;height: 500px">
+                        <div id="yearCharts" style="width: 700px;height: 450px"></div>
+                    </div>
+                </div>
+                <!--<legend>信息统计</legend>-->
+                <blockquote class="layui-elem-quote font16">本年度月统计图</blockquote>
+                <div class="layui-card-body" style="width: 100%;height: 500px">
+                    <div id="monthCharts" style="width: 700px;height: 450px"></div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="layui-col-lg6 layui-col-md12">
+            <fieldset class="layui-elem-field we-changelog" style="padding: 5px;">
+                <blockquote class="layui-elem-quote font16">项目完成度统计</blockquote>
+                <div class="layui-card-body" style="width: 100%;height: 500px">
+                    <div id="circleCharts" style="width: 700px;height: 450px"></div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script src="../../lib/echarts/echarts.min.js" charset="utf-8"></script>
+<script>
+    let ydatas = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    let successList = [320, 302, 341, 374, 390, 450, 420];
+    let errorList = [-120, -132, -101, -134, -190, -230, -210];
+    layui.extend({
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl',
+        charts: '{/}./../../static/js/charts',
+    });
+    layui.use(['form', 'layer', 'jquery', 'common', 'commonCtl','charts'], function () {
+        var form = layui.form,
+            charts = layui.charts,
+            $ = layui.jquery,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            layer = layui.layer;
+        let projectId = common.getParams("id");
+        common.get(commonCtl.GET_PROJECT_CHARTS()+'?projectId='+projectId+'&type=1','json',(callback)=>{
+            charts.getCharts(callback.data.nameList,callback.data.successList,callback.data.errorList,'monthCharts');
+        })
+        common.get(commonCtl.GET_PROJECT_CHARTS()+'?projectId='+projectId+'&type=0','json',(callback)=>{
+            charts.getCharts(callback.data.nameList,callback.data.successList,callback.data.errorList,'yearCharts');
+        })
+        common.get(commonCtl.GET_PROJECT_STATUS_NUM()+'?projectId='+projectId,'json',(callback)=>{
+            let success = {
+                'name':"已完成",
+                'value':callback.data.success
+            }
+            let error = {
+                'name':"未完成",
+                'value':callback.data.error
+            }
+            charts.getCircleCharts([success,error],'circleCharts');
+        })
+    });
+</script>
+<script type="text/javascript">
+
+</script>
+</body>
+
+</html>

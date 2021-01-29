@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>子项目列表</title>
+    <meta name="Description" content=""/>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+        .layui-form-switch {
+            width: 55px;
+        }
+
+        .layui-form-switch em {
+            width: 40px;
+        }
+
+        body {
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+
+<body>
+<div class="weadmin-nav">
+			<span class="layui-breadcrumb">
+        <a href="">项目管理</a>
+       <a href="">项目列表</a>
+        <a>
+          <cite>子项目列表</cite>
+        </a>
+      </span>
+    <a class="layui-btn layui-btn-sm" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:30px">&#x1002;</i></a>
+</div>
+<div class="weadmin-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 we-search">
+            项目搜索：
+            <div class="layui-inline">
+                <input type="text" name="projectName" placeholder="请输入项目名" autocomplete="off" class="layui-input">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+    </div>
+    <div class="" id="addBtn"></div>
+    <div class="weadmin-block demoTable" id="fatherInfo">
+        <span style="font-weight: bolder">项目名：</span><span id="father_name"></span>
+        <br>
+        <span style="font-weight: bolder">负责人：</span><span id="father_duty_person"></span>
+        <br>
+        <span style="font-weight: bolder">项目起止日期：</span><span id="father_start_end_time"></span>
+    </div>
+    <table class="layui-hide" id="articleList"></table>
+    <script type="text/html" id="statusTpl">
+        {{#
+        var curDate = new Date().getTime(),
+        beginDate = new Date(d.startTime).getTime(),
+        endDate = new Date(d.endTime).getTime();
+        if (curDate < endDate) {
+                d.delay = true;
+            }else{
+                d.delay = false;
+        } }}
+        {{# if(d.status==1){ }}
+        <input type="checkbox" name="status" lay-filter="status_change_status" lay-skin="switch" lay-text="已完成|未完成" checked value="{{d.id}}" {{# if(!d.delay){ }}disabled=""  {{# } }} />
+        {{# }else if(d.status==0){ }}
+        <input type="checkbox" name="status" lay-filter="status_change_status" lay-skin="switch" lay-text="已完成|未完成" value="{{d.id}}" {{# if(!d.delay){ }}disabled="" {{# } }}/>
+        {{# }else{ }}
+        <span style="color: red">项目流转审批中...</span>
+        {{# }}}
+    </script>
+
+    <script type="text/html" id="operateTpl">
+        {{#
+        var curDate = new Date().getTime(),
+        beginDate = new Date(d.startTime).getTime(),
+        endDate = new Date(d.endTime).getTime();
+        if (curDate < endDate) {
+            d.delay = true;
+        }else{
+            d.delay = false;
+        } }}
+        {{# if((d.status==0 || d.status==1)&&d.delay){ }}
+        <a title="申请调换" onclick="WeAdminShow('子项目流转','./exchange_page.html?id={{d.id}}',350,400)" href="javascript:;">
+            <i class="layui-icon">&#xe67d;</i>
+        </a>
+        {{# }else if(!d.delay){}}
+        <span>子项目已结束</span>
+        {{# }else{}}
+        <span>无可用操作</span>
+        {{# }}}
+    </script>
+    <script src="../../lib/layui/layui.js" charset="utf-8"></script>
+    <script src="son_list.js" type="text/javascript" charset="utf-8"></script>
+</div>
+<script type="text/html" id="addBtnTpl">
+</script>
+</body>
+</html>

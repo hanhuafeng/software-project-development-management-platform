@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>项目日志</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../static/css/font.css">
+    <link rel="stylesheet" href="../../static/css/weadmin.css">
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div class="weadmin-body">
+    <div class="layui-row">
+        <form class="" style="width: auto;display: inline-block;margin-right: 5px">
+            日志搜索：
+            <div class="layui-inline">
+                <input type="text" id="trueName" name="trueName" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+            </div>
+            <button class="layui-btn" lay-submit="" lay-filter="search" style="margin-left: 5px;display: inline-block"><i class="layui-icon">&#xe615;</i></button>
+        </form>
+        <button class="layui-btn" onclick="WeAdminShow('添加新日志','./log_add.html',600,500)"><i class="layui-icon"></i>添加
+        </button>
+    </div>
+    <fieldset class="layui-elem-field layui-field-title">
+        <legend>日志</legend>
+    </fieldset>
+    <div class="layui-collapse" lay-accordion="" id="collapse"></div>
+</div>
+<script src="../../lib/layui/layui.js" charset="utf-8"></script>
+<script>
+    Date.prototype.Format = function (fmt) {
+        var o = {
+            "M+": this.getMonth() + 1, // 月份
+            "d+": this.getDate(), // 日
+            "h+": this.getHours(), // 小时
+            "m+": this.getMinutes(), // 分
+            "s+": this.getSeconds(), // 秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+            "S": this.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+    layui.extend({
+        admin: '{/}./../../static/js/admin',
+        common: '{/}./../../static/js/common',
+        commonCtl: '{/}./../../static/js/commonCtl'
+    });
+    layui.use([
+        'form',
+        'layer',
+        'element',
+        'jquery',
+        'common',
+        'commonCtl',
+        'laytpl',
+        'admin',
+    ], function () {
+
+        var form = layui.form,
+            admin = layui.admin,
+            $ = layui.jquery,
+            common = layui.common,
+            commonCtl = layui.commonCtl,
+            laytpl = layui.laytpl,
+            element = layui.element,
+            layer = layui.layer;
+        let projectId = common.getParams('id');
+
+        //监听提交
+        form.on('submit(search)', function (data) {
+            initProjectLog();
+            return false;
+        });
+        window.initProjectLog = function(){
+            form.render()
+            let trueName = $('#trueName').val();
+            common.notAsyncGet(commonCtl.GET_PROJECT_LOG()+"?id=" + projectId+"&trueName="+trueName, 'json', (callback) => {
+                if (callback.code == 10000) {
+                    var getTpl = document.getElementById('collapseList').innerHTML
+                        , view = document.getElementById('collapse');
+                    laytpl(getTpl).render(callback, function (html) {
+                        view.innerHTML = html;
+                    });
+                    element.init()
+                } else {
+                    layer.msg('获取日志列表失败,错误代码:' + callback.code, {
+                        icon: 5,
+                        time: 5000
+                    });
+                }
+            }, (error) => {
+                layer.msg('获取日志列表失败,错误信息:' + error, {
+                    icon: 5,
+                    time: 5000
+                });
+            })
+        }
+        $(function () {
+            initProjectLog();
+        });
+        window.returnProjectId = function(){
+            return projectId;
+        }
+        form.render()
+    });
+</script>
+<script id="collapseList" type="text/html">
+    {{#  layui.each(d.data, function(index, item){ }}
+        <div class="layui-colla-item">
+            <h2 class="layui-colla-title">
+                <div style="display: inline-block;">{{item.title}}</div>
+                <div style="display: inline-block;float: right">{{item.createTime}}</div>
+            </h2>
+            <div class="layui-colla-content {{# if (index ==0){}} layui-show {{# } }}">
+                {{ item.content}}
+            </div>
+        </div>
+    {{#  }); }}
+    {{# if(d.data.length == 0){ }}
+    <h2>暂无数据</h2>
+    {{# } }}
+</script>
+
+</body>
+
+</html>
